@@ -1,0 +1,6 @@
+{
+  "name": "PurePPT - Accurate PowerPoint Reader & Editor",
+  "description": "Ultra-clean white theme PPT and PPTX reader, editor, and presenter optimized for mobile and desktop with zero glitch slide rendering and direct download.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

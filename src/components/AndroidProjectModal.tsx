@@ -35,14 +35,20 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Set up JDK 17
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           java-version: '17'
           distribution: 'temurin'
           cache: gradle
 
-      - name: Grant execute permission for gradlew
-        run: chmod +x gradlew
+      - name: Ensure Gradle Wrapper JAR exists
+        run: |
+          mkdir -p gradle/wrapper
+          if [ ! -f "gradle/wrapper/gradle-wrapper.jar" ] || [ ! -s "gradle/wrapper/gradle-wrapper.jar" ]; then
+            echo "Downloading gradle-wrapper.jar..."
+            curl -sSL "https://raw.githubusercontent.com/gradle/gradle/v8.4.0/gradle/wrapper/gradle-wrapper.jar" -o gradle/wrapper/gradle-wrapper.jar
+          fi
+          chmod +x gradlew
 
       - name: Build Android Debug APK
         run: ./gradlew assembleDebug --stacktrace --no-daemon
@@ -175,9 +181,18 @@ object StorageManager {
       zip.file('build.gradle.kts', `plugins {\n    id("com.android.application") version "8.3.0" apply false\n    id("org.jetbrains.kotlin.android") version "1.9.22" apply false\n}`);
       zip.file('gradle.properties', `org.gradle.jvmargs=-Xmx2048m\nandroid.useAndroidX=true`);
       
-      // App sources
+      // Add Gradle wrapper config
+      zip.file('gradle/wrapper/gradle-wrapper.properties', `distributionBase=GRADLE_USER_HOME\ndistributionPath=wrapper/dists\ndistributionUrl=https\\://services.gradle.org/distributions/gradle-8.4-bin.zip\nnetworkTimeout=10000\nvalidateDistributionUrl=true\nzipStoreBase=GRADLE_USER_HOME\nzipStorePath=wrapper/dists`);
+      
+      // App sources and resources
       zip.file('app/src/main/AndroidManifest.xml', manifestContent);
       zip.file('app/src/main/java/com/pureppt/app/data/StorageManager.kt', storageContent);
+      zip.file('app/src/main/res/values/strings.xml', `<resources>\n    <string name="app_name">PurePPT</string>\n</resources>`);
+      zip.file('app/src/main/res/values/themes.xml', `<resources>\n    <style name="Theme.PurePPT" parent="android:Theme.Material.Light.NoActionBar">\n        <item name="android:statusBarColor">#FFFFFF</item>\n        <item name="android:windowLightStatusBar">true</item>\n    </style>\n</resources>`);
+      zip.file('app/src/main/res/drawable/ic_launcher_background.xml', `<?xml version="1.0" encoding="utf-8"?>\n<vector xmlns:android="http://schemas.android.com/apk/res/android" android:width="108dp" android:height="108dp" android:viewportWidth="108" android:viewportHeight="108"><path android:fillColor="#0F172A" android:pathData="M0,0h108v108h-108z"/></vector>`);
+      zip.file('app/src/main/res/drawable/ic_launcher_foreground.xml', `<?xml version="1.0" encoding="utf-8"?>\n<vector xmlns:android="http://schemas.android.com/apk/res/android" android:width="108dp" android:height="108dp" android:viewportWidth="108" android:viewportHeight="108"><path android:fillColor="#FFFFFF" android:pathData="M24,28h60v44h-60z"/></vector>`);
+      zip.file('app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml', `<?xml version="1.0" encoding="utf-8"?>\n<adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">\n    <background android:drawable="@drawable/ic_launcher_background" />\n    <foreground android:drawable="@drawable/ic_launcher_foreground" />\n</adaptive-icon>`);
+      zip.file('app/src/main/res/mipmap-anydpi-v26/ic_launcher_round.xml', `<?xml version="1.0" encoding="utf-8"?>\n<adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">\n    <background android:drawable="@drawable/ic_launcher_background" />\n    <foreground android:drawable="@drawable/ic_launcher_foreground" />\n</adaptive-icon>`);
       zip.file('app/build.gradle.kts', `plugins {\n    id("com.android.application")\n    id("org.jetbrains.kotlin.android")\n}\nandroid {\n    namespace = "com.pureppt.app"\n    compileSdk = 34\n    defaultConfig { applicationId = "com.pureppt.app"; minSdk = 24; targetSdk = 34 }\n}`);
       
       const zipBlob = await zip.generateAsync({ type: 'blob' });

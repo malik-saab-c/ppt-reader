@@ -74,11 +74,7 @@ dependencies {
     implementation("androidx.compose.material3:material3:1.2.0")
     implementation("androidx.compose.material:material-icons-extended")
     
-    // Apache POI for accurate PPT (.ppt) and PPTX (.pptx) reading & editing
-    implementation("org.apache.poi:poi:5.2.5")
-    implementation("org.apache.poi:poi-ooxml:5.2.5")
-    
-    // Image loading for slide pictures
+    // Coil for async image loading in slides
     implementation("io.coil-kt:coil-compose:2.6.0")
 
     // Coroutines
